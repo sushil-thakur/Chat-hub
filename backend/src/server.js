@@ -1,8 +1,8 @@
 import express from "express";
 import { ENV } from "./config/env.js";
 import { connectDB } from "./config/db.js";
-import { clerkMiddleware, ClerkMiddleware } from "@clerk/express";
-import { inngest } from "./config/inngest.js";
+import { clerkMiddleware } from "@clerk/express";
+import { inngest, functions } from "./config/inngest.js";
 import { serve } from "inngest/express";
 
 const app = express();
@@ -14,13 +14,12 @@ app.get("/", (req, res) => {
   res.send("hellow word");
 });
 
-const startServer = async () => {
+export const startServer = async () => {
   try {
     await connectDB();
     if (ENV.NODE_ENV !== "production") {
       app.listen(ENV.PORT, () => {
         console.log("server started on port:", ENV.PORT);
-        connectDB();
       });
     }
   } catch (error) {
@@ -28,4 +27,10 @@ const startServer = async () => {
     process.exit(1)
   }
 };
-startServer();
+// In serverless platforms (e.g., Vercel), export the app for the runtime to handle requests
+export default app;
+
+// Start the server when running locally
+if (process.env.VERCEL !== "1") {
+  startServer();
+}
