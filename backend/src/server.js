@@ -1,36 +1,49 @@
+import "../instrument.mjs";
 import express from "express";
 import { ENV } from "./config/env.js";
 import { connectDB } from "./config/db.js";
 import { clerkMiddleware } from "@clerk/express";
-import { inngest, functions } from "./config/inngest.js";
+import { functions, inngest } from "./config/inngest.js";
 import { serve } from "inngest/express";
+import chatRoutes from "./routes/chat.routes.js";
+
+import cors from "cors";
+
+import * as Sentry from "@sentry/node";
 
 const app = express();
-app.use(express.json()); //req.body
-app.use(clerkMiddleware()); //req.auth will be availabe in the request object
-app.use("/api/inngest", serve({ client: inngest, functions }));
 
-app.get("/", (req, res) => {
-  res.send("hellow word");
+app.use(express.json());
+app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
+app.use(clerkMiddleware()); // req.auth will be available in the request object
+
+app.get("/debug-sentry", (req, res) => {
+  throw new Error("My first Sentry error!");
 });
 
-export const startServer = async () => {
+app.get("/", (req, res) => {
+  res.send("Hello World! 123");
+});
+
+app.use("/api/inngest", serve({ client: inngest, functions }));
+app.use("/api/chat", chatRoutes);
+
+Sentry.setupExpressErrorHandler(app);
+
+const startServer = async () => {
   try {
     await connectDB();
     if (ENV.NODE_ENV !== "production") {
       app.listen(ENV.PORT, () => {
-        console.log("server started on port:", ENV.PORT);
+        console.log("Server started on port:", ENV.PORT);
       });
     }
   } catch (error) {
-    console.log("error starting server:",error);
-    process.exit(1)
+    console.error("Error starting server:", error);
+    process.exit(1); // Exit the process with a failure code
   }
 };
-// In serverless platforms (e.g., Vercel), export the app for the runtime to handle requests
-export default app;
 
-// Start the server when running locally
-if (process.env.VERCEL !== "1") {
-  startServer();
-}
+startServer();
+
+export default app;
