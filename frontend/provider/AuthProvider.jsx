@@ -5,15 +5,15 @@ import toast from "react-hot-toast";
 
 const AuthContext = createContext({});
 export default function AuthProvider({ children }) {
-  const { gettoken } = useAuth();
+  const { getToken } = useAuth();
 
   useEffect(() => {
     //setup axios interceptor
     const interceptor = axiosInstance.interceptors.request.use(
       async (config) => {
         try {
-          const token = await gettoken();
-          if (token) config.headers.Authorization = `Bearer $(token)`;
+          const token = await getToken();
+          if (token) config.headers.Authorization = `Bearer ${token}`;
         } catch (error) {
           if (
             error.message?.includes("auth") ||
@@ -26,13 +26,13 @@ export default function AuthProvider({ children }) {
         return config;
       },
       (error) => {
-        console.error("Axios request error:".error);
+        console.error("Axios request error:", error);
         return Promise.reject(error);
       }
     );
     //cleanup function to remove intereptor, thi sis important or eaviod memeory leaks
     return () => axiosInstance.interceptors.request.eject(interceptor);
-  }, [gettoken]);
+  }, [getToken]);
 
   return <AuthContext.Provider value={{}}>{children}</AuthContext.Provider>
 }
