@@ -9,7 +9,7 @@ const SentryRoutes = Sentry.withSentryReactRouterV7Routing(Routes);
 
 const App = () => {
   const { isSignedIn, isLoaded } = useAuth();
-  if(!isLoaded) return null;
+  if (!isLoaded) return null;
   return (
     <div>
       <>

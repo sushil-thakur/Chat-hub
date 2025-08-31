@@ -13,8 +13,24 @@ import * as Sentry from "@sentry/node";
 
 const app = express();
 
+// CORS first, before auth
+app.use(
+  cors({
+    origin: ENV.CLIENT_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+    ],
+  })
+);
+// Explicitly handle OPTIONS to satisfy preflight when using credentials
+app.options(/.*/, cors({ origin: ENV.CLIENT_URL, credentials: true }));
+
 app.use(express.json());
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
 app.use(clerkMiddleware()); // req.auth will be available in the request object
 
 app.get("/debug-sentry", (req, res) => {

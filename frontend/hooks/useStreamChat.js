@@ -63,10 +63,17 @@ export const useStreamChat = () => {
 
     connect();
 
-    // cleanup
+    // cleanup: in React StrictMode (development), effects run twice.
+    // Avoid disconnecting immediately in dev to prevent transient token errors.
     return () => {
       cancelled = true;
-      client.disconnectUser();
+      if (import.meta.env.MODE !== 'development') {
+        try {
+          client.disconnectUser();
+        } catch (e) {
+          // ignore
+        }
+      }
     };
   }, [tokenData?.token, user?.id]);
 

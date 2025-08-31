@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import React, { useCallback } from "react";
 import { useSearchParams } from "react-router";
 import { useChatContext } from "stream-chat-react";
+import { CircleIcon } from "lucide-react";
+import * as Sentry from "@sentry/react";
 
 const UsersList = ({ activeChannel }) => {
   const { client } = useChatContext();
@@ -58,14 +60,14 @@ const UsersList = ({ activeChannel }) => {
   };
 
   if (isLoading)
-    return <div className='"team-channel-list__message'>Loading users...</div>;
+    return <div className="team-channel-list__message">Loading users...</div>;
   if (isError)
     return (
-      <div className='"team-channel-list__message'>Failed to load users</div>
+      <div className="team-channel-list__message">Failed to load users</div>
     );
   if (!users.length)
     return (
-      <div className='"team-channel-list__message'>No other users found</div>
+      <div className="team-channel-list__message">No other users found</div>
     );
 
   return (
