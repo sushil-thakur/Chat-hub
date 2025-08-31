@@ -2,7 +2,7 @@ import { HashIcon, LockIcon, UsersIcon, PinIcon, VideoIcon } from "lucide-react"
 import { useChannelStateContext } from "stream-chat-react";
 import { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import MembersModal from "./MembersMOdal";
+import MembersModal from "./MembersModal";
 import PinnedMessagesModal from "./PinnedMessagesModal";
 import InviteModal from "./InviteModal";
 
