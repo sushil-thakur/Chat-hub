@@ -4,6 +4,7 @@ export const ENV ={
     MONGO_URL:process.env.MONGO_URL,
     NODE_ENV: process.env.NODE_ENV,
     CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
+    CLIENT_URLS: process.env.CLIENT_URLS, // optional comma-separated list
     CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
     CLERK_SECRET_KEY:process.env.CLERK_SECRET_KEY,
     STREAM_API_SECRET:process.env.STREAM_API_SECRET,

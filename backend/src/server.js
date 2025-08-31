@@ -14,9 +14,23 @@ import * as Sentry from "@sentry/node";
 const app = express();
 
 // CORS first, before auth
+const normalize = (u) => (typeof u === "string" ? u.replace(/\/$/, "") : u);
+const extraOrigins = (ENV.CLIENT_URLS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+const allowedOrigins = [ENV.CLIENT_URL, ...extraOrigins]
+  .map(normalize)
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: ENV.CLIENT_URL,
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // same-origin or curl
+      const o = normalize(origin);
+      if (allowedOrigins.includes(o)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: [
@@ -28,7 +42,18 @@ app.use(
   })
 );
 // Explicitly handle OPTIONS to satisfy preflight when using credentials
-app.options(/.*/, cors({ origin: ENV.CLIENT_URL, credentials: true }));
+app.options(
+  /.*/,
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);
+      const o = normalize(origin);
+      if (allowedOrigins.includes(o)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(clerkMiddleware()); // req.auth will be available in the request object
