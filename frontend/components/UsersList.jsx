@@ -1,38 +1,45 @@
-import { useQuery } from '@tanstack/react-query';
-import React, { useCallback } from 'react'
+import { useQuery } from "@tanstack/react-query";
+import React, { useCallback } from "react";
 import { useSearchParams } from "react-router";
 import { useChatContext } from "stream-chat-react";
 
-
-const UsersList = ({activeChannel}) => {
-    const {client} = useChatContext();
-    const[_,setSearchParams] =useSearchParams();
-    const fetchUsers = useCallback(async()=>{
-        if(!client?.user) return;
-        const response = await client.queryUsers
-        (
-            {id:{$ne:client.user.id}},
-            {name:1},
-            {limit:20}
-        )
-         const usersOnly = response.users.filter((user) => !user.id.startsWith("recording-"));
+const UsersList = ({ activeChannel }) => {
+  const { client } = useChatContext();
+  const [_, setSearchParams] = useSearchParams();
+  const fetchUsers = useCallback(async () => {
+    if (!client?.user) return;
+    const response = await client.queryUsers(
+      { id: { $ne: client.user.id } },
+      { name: 1 },
+      { limit: 20 }
+    );
+    const usersOnly = response.users.filter(
+      (user) => !user.id.startsWith("recording-")
+    );
 
     return usersOnly;
-    },[client])
-    const {data:users= [], isLoading,isError}=useQuery({
-        queryKey:["users-list", client?.user?.id],
-        queryFn:fetchUsers,
-        enabled: !!client?.user,
-        staleTime:1000*60*5,//5 minutes
-    })
-    //stavletime
-    //what it does :tells react query the data is "fresh" for 5 minutes
-    //behavior: during these 5 minuets, react query wont reetch the data automatically
-const startDirectMessage = async (targetUser) =>{
-   if(!targetUser || !client?.user)  return;
-   try {
+  }, [client]);
+  const {
+    data: users = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["users-list", client?.user?.id],
+    queryFn: fetchUsers,
+    enabled: !!client?.user,
+    staleTime: 1000 * 60 * 5, //5 minutes
+  });
+  //stavletime
+  //what it does :tells react query the data is "fresh" for 5 minutes
+  //behavior: during these 5 minuets, react query wont reetch the data automatically
+  const startDirectMessage = async (targetUser) => {
+    if (!targetUser || !client?.user) return;
+    try {
       //  bc stream does not allow channelId to be longer than 64 chars
-      const channelId = [client.user.id, targetUser.id].sort().join("-").slice(0, 64);
+      const channelId = [client.user.id, targetUser.id]
+        .sort()
+        .join("-")
+        .slice(0, 64);
       const channel = client.channel("messaging", channelId, {
         members: [client.user.id, targetUser.id],
       });
@@ -50,15 +57,24 @@ const startDirectMessage = async (targetUser) =>{
     }
   };
 
-    if(isLoading) return <div className='"team-channel-list__message'>Loading users...</div>;
-    if(isError) return <div className='"team-channel-list__message'>Failed to load users</div>;
-    if(!users.length) return <div className='"team-channel-list__message'>No other users found</div>;
-
+  if (isLoading)
+    return <div className='"team-channel-list__message'>Loading users...</div>;
+  if (isError)
+    return (
+      <div className='"team-channel-list__message'>Failed to load users</div>
+    );
+  if (!users.length)
+    return (
+      <div className='"team-channel-list__message'>No other users found</div>
+    );
 
   return (
-<div className="team-channel-list__users">
+    <div className="team-channel-list__users">
       {users.map((user) => {
-        const channelId = [client.user.id, user.id].sort().join("-").slice(0, 64);
+        const channelId = [client.user.id, user.id]
+          .sort()
+          .join("-")
+          .slice(0, 64);
         const channel = client.channel("messaging", channelId, {
           members: [client.user.id, user.id],
         });
@@ -70,7 +86,8 @@ const startDirectMessage = async (targetUser) =>{
             key={user.id}
             onClick={() => startDirectMessage(user)}
             className={`str-chat__channel-preview-messenger  ${
-              isActive && "!bg-black/20 !hover:bg-black/20 border-l-8 border-purple-500 shadow-lg0"
+              isActive &&
+              "!bg-black/20 !hover:bg-black/20 border-l-8 border-purple-500 shadow-lg0"
             }`}
           >
             <div className="flex items-center gap-2 w-full">
@@ -91,7 +108,9 @@ const startDirectMessage = async (targetUser) =>{
 
                 <CircleIcon
                   className={`w-2 h-2 absolute -bottom-0.5 -right-0.5 ${
-                    user.online ? "text-green-500 fill-green-500" : "text-gray-400 fill-gray-400"
+                    user.online
+                      ? "text-green-500 fill-green-500"
+                      : "text-gray-400 fill-gray-400"
                   }`}
                 />
               </div>
@@ -112,4 +131,4 @@ const startDirectMessage = async (targetUser) =>{
     </div>
   );
 };
-export default UsersList
+export default UsersList;
